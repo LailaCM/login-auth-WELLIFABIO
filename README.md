@@ -1,6 +1,6 @@
 # Resumo Simples: API com Login e Posts
 
-Este projeto é uma **API básica** desenvolvida com **Node.js** e **Express.js**, ideal para quem está aprendendo a construir APIs com autenticação. Ele permite que usuários façam login e que, com um token JWT, possam acessar e manipular publicações (posts).
+Este projeto é uma **API básica** com autenticação. Ele permite que usuários façam login e que, com um token JWT, possam acessar e manipular publicações (posts).
 
 ## Funcionalidades
 
@@ -29,9 +29,7 @@ Este projeto é uma **API básica** desenvolvida com **Node.js** e **Express.js*
 
 ## Conclusão
 
-Este projeto é ótimo para iniciantes que desejam entender os conceitos de uma API REST com autenticação. Ele mostra de forma prática como proteger rotas com token, organizar pastas e lidar com requisições básicas (CRUD).
-
-Diferente de um sistema completo, como o da biblioteca, ele **não usa banco de dados real** e **tem menos entidades e funcionalidades**. Por isso, é mais indicado para fins de estudo, testes e protótipos simples.
+Este projeto mostra de forma prática como proteger rotas com token, organizar pastas e lidar com requisições básicas (CRUD). Diferente de um sistema completo ele **não usa banco de dados real** e **tem menos entidades e funcionalidades**. Por isso, é mais indicado para fins de estudo, testes e protótipos simples.
 
 ---
 
