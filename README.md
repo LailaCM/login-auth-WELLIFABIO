@@ -132,7 +132,7 @@ module.exports = {
 
 ### O que faz:
 
-- Verifica se o usuário e senha são "admin" e "1234".
+- Verifica se o e-mail e a senha são `"usuario@gmail.com"` e `"a1b2@b3c4"`.
 - Se sim, gera um token JWT com base no nome de usuário.
 - Envia o token para o cliente usar nas próximas requisições.
 
@@ -248,7 +248,7 @@ module.exports = postsRoutes;
 | Armazenamento | Em memória (sem banco de dados)      |
 | Rotas          | `/login`, `/posts`                   |
 | Segurança      | Middleware protege as rotas de posts |
-| Usuário fixo   | `admin` e senha `1234`               |
+| Usuário fixo       | `usuario@gmail.com` e senha `a1b2@b3c4`         |
 | Uso principal  | Estudo, protótipo, testes didáticos  |
 
 # Conclusão
