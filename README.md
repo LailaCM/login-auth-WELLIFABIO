@@ -34,20 +34,22 @@ Este projeto é uma **API básica** com autenticação. Ele permite que usuário
 ## `server.js`
 
 ```js
+require("dotenv").config();
 const express = require('express');
 const app = express();
-require('dotenv').config();
+const port = 3000;
 
 const loginRoutes = require('./src/routes/login');
-const postRoutes = require('./src/routes/posts');
+const postsRoutes = require('./src/routes/posts');
 
 app.use(express.json());
-app.use('/login', loginRoutes);
-app.use('/posts', postRoutes);
 
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
-});
+app.use(loginRoutes);
+app.use(postsRoutes);
+
+app.listen(port, () => {
+    console.log('listening on ' + port);
+})
 ```
 
 ### O que faz:
@@ -62,21 +64,25 @@ app.listen(3000, () => {
 ## `src/middlewares/auth.js`
 
 ```js
-const jwt = require('jsonwebtoken');
+const jsonwebtoken = require("jsonwebtoken");
 
-module.exports = (req, res, next) => {
-  const token = req.header('Authorization');
+const validate = (req, res, next) => {
+    const token  = req.headers.authorization?.split(" ")[1];
 
-  if (!token) return res.status(401).send('Acesso negado. Token não fornecido.');
+    if(!token) res.status(401).send({message : "Access Denied. No token provided."}).end();
+    
+    try {
+        const payload = jsonwebtoken.verify(token, process.env.SECRET_JWT);
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    res.status(400).send('Token inválido.');
-  }
-};
+        req.headers['user'] = payload;
+
+        next();
+    }catch(err) {
+        res.status(500).send(err).end();
+    }
+}
+
+module.exports = validate;
 ```
 
 ### O que faz:
@@ -90,20 +96,38 @@ module.exports = (req, res, next) => {
 ## `src/controllers/login.js`
 
 ```js
-const jwt = require('jsonwebtoken');
+const jsonwebtoken = require("jsonwebtoken");
+const crypto = require('node:crypto');
 
-const login = (req, res) => {
-  const { username, password } = req.body;
+const Login = (req, res) => {
+    const { user, psw } = req.body;
+    
+    try {
+        const correctPassword = ((user === "usuario@gmail.com") && (psw === "a1b2@b3c4"));
 
-  if (username === 'admin' && password === '1234') {
-    const token = jwt.sign({ username }, process.env.JWT_SECRET);
-    res.json({ token });
-  } else {
-    res.status(401).send('Credenciais inválidas');
-  }
+        if(!correctPassword) res.status(401).send({message:'E-mail or Password incorrect !'});
+
+        const token = jsonwebtoken.sign(
+            {
+                id: crypto.randomUUID(),
+                name: "Fulano da Silva",
+                avatar: "https://cdn-icons-png.flaticon.com/128/1326/1326377.png"
+            },
+            process.env.SECRET_JWT,
+            { expiresIn: "2min" }
+        );
+
+        res.status(200).json({ token : token }).end();
+    }catch(err) {
+        res.status(500).send(err).end();
+    }
+    
+    res.status(200).end();
 };
 
-module.exports = login;
+module.exports = {
+    Login
+}
 ```
 
 ### O que faz:
@@ -155,11 +179,15 @@ module.exports = { getPosts, createPost, updatePost, deletePost };
 ## `src/data/posts.js`
 
 ```js
-const posts = [
-  { title: 'Primeiro post', content: 'Este é o conteúdo do primeiro post.' }
-];
+const dataPosts = require("../data/posts");
 
-module.exports = posts;
+const posts = (req, res) => {
+    res.status(200).send(dataPosts).end();
+}
+
+module.exports = {
+    posts
+}
 ```
 
 ### O que faz:
@@ -171,13 +199,15 @@ module.exports = posts;
 ## `src/routes/login.js`
 
 ```js
+const loginController = require('../controllers/login');
+
 const express = require('express');
-const router = express.Router();
-const login = require('../controllers/login');
 
-router.post('/', login);
+const loginRoutes = express.Router();
 
-module.exports = router;
+loginRoutes.post('/login', loginController.Login);
+
+module.exports = loginRoutes;
 ```
 
 ### O que faz:
@@ -190,19 +220,16 @@ module.exports = router;
 ## `src/routes/posts.js`
 
 ```js
+const postsController = require("../controllers/posts");
+const validate = require("../middlewares/auth");
+
 const express = require('express');
-const router = express.Router();
-const auth = require('../middlewares/auth');
-const { getPosts, createPost, updatePost, deletePost } = require('../controllers/posts');
 
-router.use(auth);
+const postsRoutes = express.Router();
 
-router.get('/', getPosts);
-router.post('/', createPost);
-router.put('/:id', updatePost);
-router.delete('/:id', deletePost);
+postsRoutes.get('/posts', validate, postsController.posts);
 
-module.exports = router;
+module.exports = postsRoutes;
 ```
 
 ### O que faz:
